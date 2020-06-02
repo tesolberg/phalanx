@@ -1,54 +1,44 @@
-﻿using UnityAtoms.Custom;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Cell
 {
 
-    /////////////////////
+  	/////////////////////
     /// PUBLIC FIELDS ///
     /////////////////////
 
-    //////////////////////
+
+	//////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
-    Terrain terrain;
-    Vector3Int position;
-    CellMap cellMap;
+
+    Entity holder;
+    int control;
 
     ////////////////////
     /// CONSTRUCTORS ///
     ////////////////////
-    public Cell(Terrain terrain, Vector3Int position, CellMap cellMap)
-    {
-        this.cellMap = cellMap;
-        this.position = position;
-        this.Terrain = terrain;
-    }
 
-    /////////////////////////////////////
+	/////////////////////////////////////
     /// PUBLIC PROPERTIES ///////////////
     /////////////////////////////////////
-    public Terrain Terrain
-    {
-        get => terrain;
-        set
-        {
-            terrain = value;
-            if(cellMap != null && cellMap.cellChanged != null) cellMap.cellChanged.Raise(this);
-        }
-    }
-
-    public Vector3Int Position { get => position; }
 
 
-    /////////////////////////////////////
+	/////////////////////////////////////
     /// PUBLIC METHODS //////////////////
     /////////////////////////////////////
 
+    public void Contest(int power){
+        control -= power;
+
+    }
+
+    
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
-}
 
-public enum Terrain { Floor, Wall, Grass }
+}
