@@ -5,6 +5,8 @@ using UnityAtoms.Custom;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+#pragma warning disable 0649 // variable declared but never assigned
+
 public class TilemapController : MonoBehaviour
 {
     /////////////////////
@@ -27,12 +29,33 @@ public class TilemapController : MonoBehaviour
     [SerializeField]
     Tile greenSquare;
 
-
-    bool tileChanged = false;
-
     /////////////////////////////////////
     /// PUBLIC PROPERTIES ///////////////
     /////////////////////////////////////
+
+    /////////////////////////////////////
+    /// PUBLIC METHODS //////////////////
+    /////////////////////////////////////
+
+    public void Init()
+    {
+        grid = GetComponent<Grid>();
+        terrain = GameObject.Find("/World/Grid/Terrain").GetComponent<Tilemap>();
+        overlay = GameObject.Find("/World/Grid/Overlay").GetComponent<Tilemap>();
+
+        GetComponent<CellEventReferenceListener>().enabled = true;
+    }
+
+    public void DrawCellMap()
+    {       
+        for (int x = 0; x < cellMap.map.GetLength(0); x++)
+        {
+            for (int y = 0; y < cellMap.map.GetLength(1); y++)
+            {
+                terrain.SetTile(new Vector3Int(x,y,0), cellMap.map[x,y].Topography.tile);
+            }
+        }
+    }
 
     public void OutlineTilesGreen(Vector3Int[] positions)
     {
@@ -45,29 +68,15 @@ public class TilemapController : MonoBehaviour
 
         overlay.RefreshAllTiles();
     }
-
-    /////////////////////////////////////
-    /// PUBLIC METHODS //////////////////
-    /////////////////////////////////////
-
-    public void Init()
+    
+    public void UpdateTile(Cell cell)
     {
-        grid = GetComponent<Grid>();
-        terrain = GameObject.Find("/Grid/Terrain").GetComponent<Tilemap>();
-        overlay = GameObject.Find("/Grid/Overlay").GetComponent<Tilemap>();
 
-        GetComponent<CellEventReferenceListener>().enabled = true;
-    }
+        Vector3Int pos = (Vector3Int)cell.Position;
 
-    internal void DrawCellMap()
-    {       
-        for (int x = 0; x < cellMap.map.GetLength(0); x++)
-        {
-            for (int y = 0; y < cellMap.map.GetLength(1); y++)
-            {
-                terrain.SetTile(new Vector3Int(x,y,0), cellMap.map[x,y].Topography.tile);
-            }
-        }
+        // Sets tile on terrain tilemap
+        terrain.SetTile(pos, cell.Topography.tile);
+        terrain.RefreshTile(pos);
     }
 
     //     public Cell CellAtWorldPosition(Vector3 position)
@@ -81,14 +90,5 @@ public class TilemapController : MonoBehaviour
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
-    void UpdateTile(Cell cell)
-    {
-
-        Vector3Int pos = (Vector3Int)cell.Position;
-
-        // Sets tile on terrain tilemap
-        terrain.SetTile(pos, cell.Topography.tile);
-        terrain.RefreshTile(pos);
-    }
 
 }

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable 0649 // variable declared but never assigned
+
 public class Attack : MonoBehaviour
 {
     [SerializeField]

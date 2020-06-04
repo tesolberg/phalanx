@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Pathfinding;
 
+#pragma warning disable 0649 // variable declared but never assigned
+
+
 namespace Managers
 {
     public class GameManager : MonoBehaviour

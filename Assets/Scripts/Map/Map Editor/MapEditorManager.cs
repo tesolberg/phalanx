@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+#pragma warning disable 0649 // variable declared but never assigned
+
 namespace MapEditor
 {
     public class MapEditorManager : MonoBehaviour
