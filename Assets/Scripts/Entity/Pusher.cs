@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cell
+public class Pusher : MonoBehaviour
 {
 
-  	/////////////////////
+	/////////////////////
     /// PUBLIC FIELDS ///
     /////////////////////
 
@@ -14,8 +14,6 @@ public class Cell
     /// PRIVATE FIELDS ///
     //////////////////////
 
-    Entity holder;
-    int control;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -29,11 +27,6 @@ public class Cell
 	/////////////////////////////////////
     /// PUBLIC METHODS //////////////////
     /////////////////////////////////////
-
-    public void Contest(int power){
-        control -= power;
-
-    }
 
     
 

@@ -1,18 +1,46 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Entity : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    /////////////////////
+    /// PUBLIC FIELDS ///
+    /////////////////////
+
+
+	//////////////////////
+    /// PRIVATE FIELDS ///
+    //////////////////////
+
+    Vector2Int position;
+
+
+    ////////////////////
+    /// CONSTRUCTORS ///
+    ////////////////////
+
+	/////////////////////////////////////
+    /// PUBLIC PROPERTIES ///////////////
+    /////////////////////////////////////
+
+
+	/////////////////////////////////////
+    /// PUBLIC METHODS //////////////////
+    /////////////////////////////////////
+
+
+    //////////////////////////////////////
+    /// PRIVATE METHODS AND PROPERTIES ///
+    //////////////////////////////////////
+
+    private void Update() {
+        UpdatePosition();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void UpdatePosition()
     {
-        
+        position = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
     }
 }
