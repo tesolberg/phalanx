@@ -21,8 +21,7 @@ namespace Test
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mouseWorldPos.z = 0f;
+                Vector3 mouseWorldPos = Elias.Utilities.GetMouseWorldPosition();
                 List<Vector3> positions = phalanx.GetFrontlinePositions(mouseWorldPos, direction);
 
                 foreach (var position in positions)

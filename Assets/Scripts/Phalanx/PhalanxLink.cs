@@ -9,15 +9,16 @@ public class PhalanxLink
     /////////////////////
 
 
-	//////////////////////
+    //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
 
+    Vector3 position;
     Entity entity;
     bool endLink;
     PhalanxLink rightLink;
     PhalanxLink leftLink;
-    
+
     public static readonly float linkRadius = .45f;
     public static readonly float maxLinkDist = 1.25f;
     public static readonly float minLinkDist = 1f;
@@ -27,7 +28,8 @@ public class PhalanxLink
     /// CONSTRUCTORS ///
     ////////////////////
 
-    public PhalanxLink(Entity entity, bool endLink, PhalanxLink rightLink, PhalanxLink leftLink){
+    public PhalanxLink(Entity entity, bool endLink, PhalanxLink rightLink, PhalanxLink leftLink)
+    {
         this.Entity = entity;
         this.EndLink = endLink;
         this.RightLink = rightLink;
@@ -41,6 +43,15 @@ public class PhalanxLink
     public PhalanxLink RightLink { get => rightLink; set => rightLink = value; }
     public bool EndLink { get => endLink; set => endLink = value; }
     public Entity Entity { get => entity; set => entity = value; }
+    public Vector3 Position
+    {
+        get => position;
+        set
+        {
+            position = value;
+            // Move entity to position
+        }
+    }
 
 
     /////////////////////////////////////
@@ -48,7 +59,8 @@ public class PhalanxLink
     /////////////////////////////////////
 
     // Moves to maintain phalanx line
-    public void Follow(PhalanxLink link){
+    public void Follow(PhalanxLink link)
+    {
         float distance = (link.entity.transform.position - entity.transform.position).magnitude;
 
     }

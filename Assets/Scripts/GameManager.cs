@@ -18,14 +18,10 @@ namespace Managers
         //////////////////////
         /// PRIVATE FIELDS ///
         //////////////////////
-        [SerializeField]
-        CellMap cellMap;
-        [SerializeField]
-        CellEvent cellChanged;
-        [SerializeField]
-        string[] mapFiles;
-        [SerializeField]
-        Topography[] topographies;
+        [SerializeField] CellMap cellMap;
+        [SerializeField] CellEvent cellChanged;
+        [SerializeField] string[] mapFiles;
+        [SerializeField] Topography[] topographies;
 
         bool refreshAstar = false;
 
@@ -48,12 +44,13 @@ namespace Managers
             SceneManager.LoadScene(1);
         }
 
-        void OnSceneLoaded(Scene scene, LoadSceneMode mode){
-            
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+
             string[,] stringMap = SaveLoadManager.LoadStringMap(mapFiles[0]);
 
             BuildCellMap(stringMap);
-            
+
             TilemapController tilemapController = Object.FindObjectOfType<TilemapController>();
             tilemapController.Init();
             tilemapController.DrawCellMap();
@@ -91,8 +88,10 @@ namespace Managers
             }
         }
 
-        private void LateUpdate() {
-            if(refreshAstar){
+        private void LateUpdate()
+        {
+            if (refreshAstar)
+            {
                 AstarPath.active.Scan();
                 refreshAstar = false;
             }

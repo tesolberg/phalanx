@@ -53,9 +53,11 @@ public class Phalanx
     {
         List<Vector3> positions = new List<Vector3>();
 
-        // Sets offset vector between links based on direction
+        // Sets righthand offset vector between links based on direction of frontline
         float linkDistance = (PhalanxLink.maxLinkDist + PhalanxLink.minLinkDist) / 2f;
-        Vector3 linkVector = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
+        Vector3 linkVectorForward = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
+        Vector3 linkVectorRight = Quaternion.Euler(0, 0, -90) * linkVectorForward;
+
 
         // Adds position of cursor
         positions.Add(origin);
@@ -64,13 +66,13 @@ public class Phalanx
         for (int i = 1; i <= maxWidth / 2; i++)
         {
             // Tentative position of new link
-            Vector3 position = (linkVector * i) + origin;
+            Vector3 position = (linkVectorRight * i) + origin;
 
             // Check for wall at tentative position.
             if (!ValidLinkPosition(position)) break;
 
             // If no wall, add to positions.
-            positions.Add((linkVector * i) + origin);
+            positions.Add((linkVectorRight * i) + origin);
 
             // Check for wall within link max distance and break if found
             if (LinksToWall(position)) break;
@@ -80,19 +82,24 @@ public class Phalanx
         for (int i = -1; i >= -maxWidth / 2; i--)
         {
             // Tentative position of new link
-            Vector3 position = (linkVector * i) + origin;
+            Vector3 position = (linkVectorRight * i) + origin;
 
             // Check for wall at tentative position.
             if (!ValidLinkPosition(position)) break;
 
             // If no wall, add to positions.
-            positions.Add((linkVector * i) + origin);
+            positions.Add((linkVectorRight * i) + origin);
 
             // Check for wall within link max distance and break if found
             if (LinksToWall(position)) break;
         }
 
         return positions;
+    }
+
+
+    public void SetFrontline(Vector3 origin, Direction direction){
+
     }
 
     public List<Vector3Int> GetFrontline(Vector3Int position, Direction direction)
