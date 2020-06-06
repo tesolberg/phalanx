@@ -14,8 +14,7 @@ public class Entity : MonoBehaviour
     /// PRIVATE FIELDS ///
     //////////////////////
 
-    Vector2Int position;
-
+    GameObject selectedGFX;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -30,17 +29,17 @@ public class Entity : MonoBehaviour
     /// PUBLIC METHODS //////////////////
     /////////////////////////////////////
 
+    public void SelectEntity(bool selected){
+        selectedGFX.SetActive(selected);
+    }
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
-    private void Update() {
-        UpdatePosition();
+    private void Awake() {
+        selectedGFX = transform.Find("SelectedGFX").gameObject;
+        selectedGFX.SetActive(false);
     }
 
-    private void UpdatePosition()
-    {
-        position = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
-    }
 }
