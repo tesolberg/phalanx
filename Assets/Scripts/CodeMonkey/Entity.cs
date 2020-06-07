@@ -15,6 +15,7 @@ public class Entity : MonoBehaviour
     //////////////////////
 
     GameObject selectedGFX;
+    IMovePosition movePosition;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -33,12 +34,17 @@ public class Entity : MonoBehaviour
         selectedGFX.SetActive(selected);
     }
 
+    public void MoveTo(Vector3 targetPosition){
+        movePosition.SetMovePosition(targetPosition);
+    }
+
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
     private void Awake() {
         selectedGFX = transform.Find("SelectedGFX").gameObject;
+        movePosition = GetComponent<IMovePosition>();
         selectedGFX.SetActive(false);
     }
 
