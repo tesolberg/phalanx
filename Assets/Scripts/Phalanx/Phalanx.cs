@@ -17,10 +17,6 @@ public class Phalanx
 
     List<Entity> entities = new List<Entity>();
     List<PhalanxLink> links = new List<PhalanxLink>();
-    List<Vector3Int> desiredFrontline = new List<Vector3Int>();
-
-    LayerMask terrainMask;
-    int maxWidth = 9;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -29,7 +25,6 @@ public class Phalanx
     public Phalanx(List<Entity> entities)
     {
         this.entities = entities;
-        terrainMask = LayerMask.GetMask("Terrain");
     }
 
     /////////////////////////////////////
@@ -49,53 +44,6 @@ public class Phalanx
     //     if(entities.Contains(entity)) entities.Remove(entity);
     // }
 
-    public List<Vector3> GetFrontlinePositions(Vector3 origin, Direction direction)
-    {
-        List<Vector3> positions = new List<Vector3>();
-
-        // Sets righthand offset vector between links based on direction of frontline
-        float linkDistance = (PhalanxLink.maxLinkDist + PhalanxLink.minLinkDist) / 2f;
-        Vector3 linkVectorForward = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
-        Vector3 linkVectorRight = Quaternion.Euler(0, 0, -90) * linkVectorForward;
-
-
-        // Adds position of cursor
-        positions.Add(origin);
-
-        // Adds positivly offset positions untill reaching wall
-        for (int i = 1; i <= maxWidth / 2; i++)
-        {
-            // Tentative position of new link
-            Vector3 position = (linkVectorRight * i) + origin;
-
-            // Check for wall at tentative position.
-            if (!ValidLinkPosition(position)) break;
-
-            // If no wall, add to positions.
-            positions.Add((linkVectorRight * i) + origin);
-
-            // Check for wall within link max distance and break if found
-            if (LinksToWall(position)) break;
-        }
-
-        // Adds negativly offset positions untill reaching wall
-        for (int i = -1; i >= -maxWidth / 2; i--)
-        {
-            // Tentative position of new link
-            Vector3 position = (linkVectorRight * i) + origin;
-
-            // Check for wall at tentative position.
-            if (!ValidLinkPosition(position)) break;
-
-            // If no wall, add to positions.
-            positions.Add((linkVectorRight * i) + origin);
-
-            // Check for wall within link max distance and break if found
-            if (LinksToWall(position)) break;
-        }
-
-        return positions;
-    }
 
 
     public void SetFrontline(Vector3 origin, Direction direction){
@@ -123,17 +71,6 @@ public class Phalanx
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
-    bool ValidLinkPosition(Vector2 position)
-    {
-        RaycastHit2D hit = Physics2D.CircleCast(new Vector2(position.x, position.y), PhalanxLink.linkRadius, Vector2.zero, 1f, terrainMask);
-        return !hit;
-    }
-
-    bool LinksToWall(Vector2 position)
-    {
-        RaycastHit2D hit = Physics2D.CircleCast(position, PhalanxLink.minLinkDist, Vector2.zero, 1f, terrainMask);
-        return hit;
-    }
 
 }
 

@@ -17,18 +17,18 @@ namespace Test
             phalanx = new Phalanx(entities);
         }
 
-        void Update()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector3 mouseWorldPos = Elias.Utilities.GetMouseWorldPosition();
-                List<Vector3> positions = phalanx.GetFrontlinePositions(mouseWorldPos, direction);
+        // void Update()
+        // {
+        //     if (Input.GetMouseButtonDown(0))
+        //     {
+        //         Vector3 mouseWorldPos = Elias.Utilities.GetMouseWorldPosition();
+        //         List<Vector3> positions = phalanx.GetFrontlinePositions(mouseWorldPos, direction);
 
-                foreach (var position in positions)
-                {
-                    GameObject.Instantiate(markerPrefab, position, Quaternion.identity);
-                }
-            }
-        }
+        //         foreach (var position in positions)
+        //         {
+        //             GameObject.Instantiate(markerPrefab, position, Quaternion.identity);
+        //         }
+        //     }
+        // }
     }
 }
