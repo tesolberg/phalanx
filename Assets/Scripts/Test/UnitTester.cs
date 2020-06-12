@@ -7,12 +7,13 @@ namespace Test
 {
     public class UnitTester : MonoBehaviour
     {
-        public AIPath ai;
-        public Transform target;
+        public Entity entity;
 
         private void Update()
         {
-            ai.destination = target.position;
+            if(Input.GetKeyDown(KeyCode.C)){
+                entity.IncomingAttack(entity);
+            }
         }
     }
 }

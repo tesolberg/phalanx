@@ -116,6 +116,7 @@ public class FormationGenerator : MonoBehaviour
 
         return positions;
     }
+
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
@@ -142,10 +143,6 @@ public class FormationGenerator : MonoBehaviour
         return hit;
     }
 
-
-
-
-
     List<Vector3> GetPositionListAround(Vector3 origin, float distance, int positionCount)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -160,4 +157,29 @@ public class FormationGenerator : MonoBehaviour
     }
 
 
+}
+
+public enum Direction { N, NE, E, SE, S, SW, W, NW }
+
+public static class DirectionExtensions {
+    public static Vector3 DirectionToVector3(Direction direction){
+        switch (direction){
+            case Direction.N :
+            return new Vector3(0f, 1f, 0f);
+            case Direction.NE :
+            return new Vector3(.7f, .7f, 0f);
+            case Direction.E :
+            return new Vector3(1f, 0f, 0f);
+            case Direction.SE :
+            return new Vector3(.7f, -.7f, 0f);
+            case Direction.S :
+            return new Vector3(0f, -1f, 0f);
+            case Direction.SW :
+            return new Vector3(-.7f, -.7f, 0f);
+            case Direction.W :
+            return new Vector3(-1f, 0f, 0f);
+            default :
+            return new Vector3(-.7f, .7f, 0f);
+       }
+    }
 }

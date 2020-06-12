@@ -12,10 +12,10 @@ namespace Test
         Phalanx phalanx;
         public Direction direction = Direction.N;
 
-        private void Start()
-        {
-            phalanx = new Phalanx(entities);
-        }
+        // private void Start()
+        // {
+        //     phalanx = new Phalanx();
+        // }
 
         // void Update()
         // {

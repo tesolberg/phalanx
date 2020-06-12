@@ -17,14 +17,17 @@ public class EntityUIController : MonoBehaviour
     //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
+    [SerializeField] Faction playerFaction;
     [SerializeField] Transform selectionArea;
     [SerializeField] FormationGenerator fGen;
     Vector3 mouseStartPosition;
     List<Entity> selectedEntities;
-    bool grouped = false;
-    public Direction phalanxDirection = Direction.N;
+    List<Phalanx> phalanxes;
+    Phalanx selectedPhalanx;
+    int lastSelectedPhalanxIndex = 0;
+    public Direction formationDirection = Direction.N;
 
-    // Formation indication
+    // Formation ui
     [SerializeField] GameObject unitPositionIndicatorPrefab;
     [SerializeField] Transform positionIndicatorParent;
     List<GameObject> positionIndicators = new List<GameObject>();
@@ -48,6 +51,8 @@ public class EntityUIController : MonoBehaviour
     {
         terrainMask = LayerMask.GetMask("Terrain");
         selectedEntities = new List<Entity>();
+        phalanxes = new List<Phalanx>();
+        selectedPhalanx = null;
         selectionArea.gameObject.SetActive(false);
     }
 
@@ -65,6 +70,13 @@ public class EntityUIController : MonoBehaviour
                 entity.SelectEntity(false);
             }
             selectedEntities.Clear();
+
+            // Clears selected phalanx
+            if (selectedPhalanx != null)
+            {
+                selectedPhalanx.SetSelected(false);
+            }
+            selectedPhalanx = null;
         }
 
         // While left mouse button pressed
@@ -97,7 +109,7 @@ public class EntityUIController : MonoBehaviour
             foreach (Collider2D c in colliders)
             {
                 Entity e = c.GetComponent<Entity>();
-                if (e)
+                if (e && e.faction == playerFaction && e.ActivePhalanx == null)
                 {
                     selectedEntities.Add(e);
                     e.SelectEntity(true);
@@ -109,16 +121,29 @@ public class EntityUIController : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             Vector3 targetPosition = Utilities.GetMouseWorldPosition();
-
             List<Vector3> formation;
-            if(grouped) formation = fGen.GetPhalanxFormation(targetPosition,phalanxDirection, selectedEntities.Count);
-            else formation = fGen.GetCircleFormation(targetPosition);
-            int targetPositionsIndex = 0;
 
-            foreach (Entity entity in selectedEntities)
+            // If phalanx is selected
+            if (selectedPhalanx != null)
             {
-                entity.MoveTo(formation[targetPositionsIndex]);
-                targetPositionsIndex = (targetPositionsIndex + 1) % formation.Count;
+                formation = fGen.GetPhalanxFormation(targetPosition, formationDirection, selectedPhalanx.entities.Count);
+                for (int i = 0; i < selectedPhalanx.entities.Count; i++)
+                {
+                    selectedPhalanx.entities[i].MoveTo(formation[i]);
+                }
+            }
+
+            // No phalanx selected
+            else
+            {
+                formation = fGen.GetCircleFormation(targetPosition);
+                int targetPositionsIndex = 0;
+
+                foreach (Entity entity in selectedEntities)
+                {
+                    entity.MoveTo(formation[targetPositionsIndex]);
+                    targetPositionsIndex = (targetPositionsIndex + 1) % formation.Count;
+                }
             }
         }
 
@@ -126,20 +151,67 @@ public class EntityUIController : MonoBehaviour
         HideFormationIndication();
 
         // Draws new formation indication if there is entities selected
-        if (selectedEntities.Count > 0)
+        if (selectedEntities.Count > 0 || selectedPhalanx != null)
         {
             DrawFormationIndication();
         }
 
+        // Rotating formation
         if (Input.GetKeyDown(KeyCode.R))
         {
-            int nextVal = (int)phalanxDirection + 1;
-            phalanxDirection = (Direction)(nextVal % Enum.GetNames(typeof(Direction)).Length);
+            int nextVal = (int)formationDirection + 1;
+            formationDirection = (Direction)(nextVal % Enum.GetNames(typeof(Direction)).Length);
         }
 
+        // Grouping entities
         if (Input.GetKeyDown(KeyCode.G))
         {
-            grouped = !grouped;
+            if (selectedPhalanx != null)
+            {
+                selectedPhalanx.Disband();
+                phalanxes.Remove(selectedPhalanx);
+                selectedPhalanx = null;
+            }
+            else if (selectedEntities.Count > 0)
+            {
+                // Create new phalanx
+                // Add selected entities as phalanx links
+                // 
+
+                Phalanx newPhalanx = new Phalanx();
+                foreach (Entity entity in selectedEntities)
+                {
+                    entity.SelectEntity(false);
+                    newPhalanx.AddEntity(entity);
+                    entity.ActivePhalanx = newPhalanx;
+                }
+
+                selectedEntities.Clear();
+
+                selectedPhalanx = newPhalanx;
+                selectedPhalanx.SetSelected(true);
+                phalanxes.Add(newPhalanx);
+            }
+        }
+
+        // Cycles selected phalanx
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (selectedPhalanx == null)
+            {
+                if (phalanxes.Count > 0)
+                {
+                    selectedPhalanx = phalanxes[lastSelectedPhalanxIndex % phalanxes.Count];
+                    selectedPhalanx.SetSelected(true);
+                }
+            }
+            else
+            {
+                selectedPhalanx.SetSelected(false);
+                lastSelectedPhalanxIndex = (phalanxes.FindIndex(item => item == selectedPhalanx) + 1) % phalanxes.Count;
+                selectedPhalanx = phalanxes[lastSelectedPhalanxIndex];
+                selectedPhalanx.SetSelected(true);
+            }
         }
     }
 
@@ -155,12 +227,22 @@ public class EntityUIController : MonoBehaviour
     {
         Vector3 formationOrigin = Utilities.GetMouseWorldPosition();
         List<Vector3> formationPositions;
+        int positionsToDraw;
 
-        // Grabs formation based on grouped status
-        if (grouped) formationPositions = fGen.GetPhalanxFormation(formationOrigin, phalanxDirection, selectedEntities.Count);
-        else formationPositions = fGen.GetCircleFormation(formationOrigin);
+        // Grabs formation positions
+        if (selectedPhalanx != null)
+        {
+            formationPositions = fGen.GetPhalanxFormation(formationOrigin, formationDirection, selectedPhalanx.entities.Count);
+            positionsToDraw = formationPositions.Count;
+        }
+        else
+        {
+            formationPositions = fGen.GetCircleFormation(formationOrigin);
+            positionsToDraw = selectedEntities.Count;
+        }
 
-        for (int i = 0; i < selectedEntities.Count; i++)
+        // Draws formation
+        for (int i = 0; i < positionsToDraw; i++)
         {
 
             // Generates new indicator if neccessary
@@ -179,5 +261,6 @@ public class EntityUIController : MonoBehaviour
             else positionIndicators[i].SetActive(false);
         }
     }
+
 }
 
