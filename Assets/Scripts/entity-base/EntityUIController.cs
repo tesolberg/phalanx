@@ -17,6 +17,7 @@ public class EntityUIController : MonoBehaviour
     //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
+    [SerializeField] FormationSettings settings;
     [SerializeField] Faction playerFaction;
     [SerializeField] Transform selectionArea;
     [SerializeField] FormationGenerator fGen;
@@ -126,12 +127,15 @@ public class EntityUIController : MonoBehaviour
             // If phalanx is selected
             if (selectedPhalanx != null)
             {
-                formation = fGen.GetPhalanxFormation(targetPosition, formationDirection, selectedPhalanx.links.Count);
-                for (int i = 0; i < selectedPhalanx.links.Count; i++)
-                {
-                    selectedPhalanx.links[i].GetComponent<IMovePosition>().SetMovePosition(formation[i]);
-                    selectedPhalanx.links[i].phalanxDirection = formationDirection;
-                }
+                // formation = fGen.GetPhalanxFormation(targetPosition, formationDirection, selectedPhalanx.links.Count);
+                // for (int i = 0; i < selectedPhalanx.links.Count; i++)
+                // {
+                //     selectedPhalanx.links[i].GetComponent<IMovePosition>().SetMovePosition(formation[i]);
+                //     selectedPhalanx.links[i].phalanxDirection = formationDirection;
+                // }
+
+                selectedPhalanx.EstablishFormationAt(targetPosition, formationDirection);
+
             }
 
             // No phalanx selected
@@ -177,9 +181,8 @@ public class EntityUIController : MonoBehaviour
             {
                 // Create new phalanx
                 // Add selected entities as phalanx links
-                // 
 
-                Phalanx newPhalanx = new Phalanx();
+                Phalanx newPhalanx = new Phalanx(settings);
                 foreach (Entity entity in selectedEntities)
                 {
                     entity.SelectEntity(false);
@@ -233,7 +236,7 @@ public class EntityUIController : MonoBehaviour
         // Grabs formation positions
         if (selectedPhalanx != null)
         {
-            formationPositions = fGen.GetPhalanxFormation(formationOrigin, formationDirection, selectedPhalanx.links.Count);
+            formationPositions = selectedPhalanx.GetPhalanxFrontline(formationOrigin, formationDirection);
             positionsToDraw = formationPositions.Count;
         }
         else

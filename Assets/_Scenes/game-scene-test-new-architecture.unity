@@ -6745,6 +6745,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 789bc29c1aadc044f8aa76e8a8db8904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  settings: {fileID: 11400000, guid: 23681e650f79c6d46a61e28eb5ff5ba9, type: 2}
   playerFaction: {fileID: 11400000, guid: 1bb5626a743f4f445ac13972d97b6ee9, type: 2}
   selectionArea: {fileID: 52665656}
   fGen: {fileID: 1622619093}
@@ -6875,7 +6876,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1252769214
 Transform:
   m_ObjectHideFlags: 0
