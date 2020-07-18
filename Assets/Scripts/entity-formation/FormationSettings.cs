@@ -7,6 +7,7 @@ public class FormationSettings : ScriptableObject
 {
     public int maxUnitsSelected = 50;
     public int frontlineMaxWidth = 100;
+    public float phalanxLinkRadius;
     public float maxPhalanxLinkDistance;
     public float minPhalanxLinkDistance;
     public float standardPhalanxLinkDistance;    

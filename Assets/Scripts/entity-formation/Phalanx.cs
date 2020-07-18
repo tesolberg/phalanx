@@ -16,17 +16,23 @@ public class Phalanx
     /////////////////////
     /// PUBLIC FIELDS ///
     /////////////////////
-    public List<PhalanxLink> links = new List<PhalanxLink>();
+    public List<Entity> activeEntities = new List<Entity>();
 
 
     //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
-
-    private List<List<PhalanxLink>> columns = new List<List<PhalanxLink>>();
-    Direction direction;
     private readonly FormationSettings settings;
-    private readonly int terrainMask;
+    private int terrainMask;
+    private float linkDistance;
+
+    Direction direction;
+    Vector3 positionalAnchor;
+    private List<List<PhalanxLink>> columns = new List<List<PhalanxLink>>();
+    private Vector3 linkVectorForward;
+    private Vector3 linkVectorRight;
+    private Vector3 linkVectorBackward;
+
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -34,56 +40,43 @@ public class Phalanx
 
     public Phalanx (FormationSettings settings){
         this.settings = settings;
+        linkDistance = settings.standardPhalanxLinkDistance;
+        
         terrainMask = LayerMask.GetMask("Terrain");
     }
 
     /////////////////////////////////////
     /// PUBLIC PROPERTIES ///////////////
     /////////////////////////////////////
+    public Direction Direction { get => direction; }
 
 
     /////////////////////////////////////
     /// PUBLIC METHODS //////////////////
     /////////////////////////////////////
 
-    public void TakeUpPositionAt(Vector2 position){
-        // Generate first rank positions
-        List<Vector3> firstRank = GetFirstRankPositions(position, direction, links.Count);
-
-        // Generate position columns lists, one for each position in first rank and add respective positions
-        List<List<Vector3>> positionColumns = new List<List<Vector3>>();
-        for (int i = 0; i < firstRank.Count; i++)
+    public void AddEntity(Entity entity)
+    {
+        if (!activeEntities.Contains(entity))
         {
-            positionColumns.Add(new List<Vector3>());
-            positionColumns[i].Add(firstRank[i]);
+         activeEntities.Add(entity);
+
         }
-
-        // Generate remaining positions for each column and add them to position column lists
-        
-
-        // Assign phalanx links to positions and populate phalanx link columns list.
     }
 
-    public void AddLink(PhalanxLink link)
+    public void RemoveEntity(Entity entity)
     {
-        if (!links.Contains(link)) links.Add(link);
-    }
-
-    public void RemoveLink(PhalanxLink link)
-    {
-        if (links.Contains(link))
+        if (activeEntities.Contains(entity))
         {
-            link.OnLinkRemovedFromPhalanx();
 
-            links.Remove(link);
+            activeEntities.Remove(entity);
         }
     }
 
     public void Disband()
     {
-        foreach (PhalanxLink link in links)
+        foreach (Entity entity in activeEntities)
         {
-            Entity entity = link.GetComponent<Entity>();
             entity.ActivePhalanx = null;
             entity.SelectEntityAsPhalanxMember(false);
         }
@@ -91,19 +84,86 @@ public class Phalanx
 
     public void SetSelectedStatus(bool selected)
     {
-        foreach (PhalanxLink link in links)
+        foreach (Entity entity in activeEntities)
         {
-            link.GetComponent<Entity>().SelectEntityAsPhalanxMember(selected);
+            entity.SelectEntityAsPhalanxMember(selected);
         }
     }
 
-    //////////////////////////////////////
-    /// PRIVATE METHODS AND PROPERTIES ///
-    //////////////////////////////////////
+    public void EstablishFormationAt(Vector3 position, Direction direction){
+        // Updates phalanx direction and anchor
+        this.direction = direction;
+        positionalAnchor = position;
 
-public List<Vector3> GetFirstRankPositions(Vector3 origin, Direction direction, int phalanxSize)
+        // Updates vectors
+        linkVectorForward = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
+        linkVectorRight = Quaternion.Euler(0, 0, -90) * linkVectorForward;
+        linkVectorBackward = Quaternion.Euler(0, 0, -180) * linkVectorForward;
+
+        int nextEntityIndex = 0;
+
+        // Generate first rank phalanx links
+        List<Vector3> firstRankPositions = GetPhalanxFrontline(position, direction);
+        columns.Clear();
+        for (int i = 0; i < firstRankPositions.Count; i++)
+        {
+            columns.Add(new List<PhalanxLink>());
+            columns[i].Add(new PhalanxLink(firstRankPositions[i], activeEntities[nextEntityIndex++]));
+        }
+        
+        // Guard against infinite loop in case it is impossible to generate enough positions
+        int tries = 0;
+
+        // Adds remaining needed positions
+        while(true){
+            foreach (var column in columns)
+            {
+                // Checks if number of needed positions is reached + guard
+                if(nextEntityIndex >= activeEntities.Count || tries >= activeEntities.Count * 2) break;
+
+                tries++;
+
+                // Try to add new link to end of column
+                PhalanxLink newLink = GetNewRearLink(column);
+
+                // If the new link is valid, add entity and add link to list for this column
+                if(ValidPosition(newLink.position)){
+                    newLink.entity = activeEntities[nextEntityIndex++];
+                    column.Add(newLink);
+                }
+            }
+
+            // Checks if number of needed positions is reached + guard
+            if(nextEntityIndex == activeEntities.Count || tries >= activeEntities.Count * 2) break;
+        }
+
+        // Give move commands
+        foreach (var column in columns)
+        {
+            foreach (var link in column)
+            {
+                link.entity.MoveTo(link.position);
+            }
+        }
+    }
+
+    private Vector3 GetNextPositionInColumn(List<Vector3> column)
+    {
+        return column[0] + (linkVectorBackward *  column.Count);
+    }
+
+        private PhalanxLink GetNewRearLink(List<PhalanxLink> column)
+    {
+        Vector3 newPosition = column[0].position + (linkVectorBackward *  column.Count);
+        return new PhalanxLink(newPosition);
+    }
+
+    public List<Vector3> GetPhalanxFrontline(Vector3 origin, Direction direction)
     {
         List<Vector3> positions = new List<Vector3>();
+        
+        // Gets number of units in phalanx
+        int positionCount = activeEntities.Count;
 
         // Sets righthand offset vector between links based on direction of frontline
         float linkDistance = settings.standardPhalanxLinkDistance;
@@ -115,6 +175,7 @@ public List<Vector3> GetFirstRankPositions(Vector3 origin, Direction direction, 
         // Adds position of cursor
         positions.Add(origin);
 
+        // Flags for when flanks are reached
         bool rightFlankReached = false;
         bool leftFlankReached = false;
 
@@ -122,7 +183,7 @@ public List<Vector3> GetFirstRankPositions(Vector3 origin, Direction direction, 
         for (int i = 1; i <= settings.frontlineMaxWidth / 2; i++)
         {
             // Breaks when needed positions is generated
-            if (positions.Count >= phalanxSize) return positions;
+            if (positions.Count >= positionCount) return positions;
 
             // Tentative right hand position
             Vector3 position = (linkVectorRight * i) + origin;
@@ -133,58 +194,29 @@ public List<Vector3> GetFirstRankPositions(Vector3 origin, Direction direction, 
             // Check for wall within link max distance and flag if found
             if (LinksToWall(position)) rightFlankReached = true; ;
 
-            // Checks again for if needed positions is reached
-            if (positions.Count >= phalanxSize) return positions;
+            // Breaks when needed positions is generated
+            if (positions.Count >= positionCount) return positions;
 
             // Repeats for left hand side
             position = (linkVectorRight * -i) + origin;
             if (!ValidPosition(position)) leftFlankReached = true;
             if (!leftFlankReached) positions.Add(position);
             if (LinksToWall(position)) leftFlankReached = true; ;
-
-            if(rightFlankReached && leftFlankReached) break;
         }
+
 
         return positions;
     }
 
-    // public List<Vector3> GetRemainingPositionsFromFrontRank(List<Vector3> frontRank){
-        
-    //     // Creates copy of all front rank positions (in reversed order)
-    //     List<Vector3> frontlinePositions = new List<Vector3>();
-    //     foreach (Vector3 pos in positions)
-    //     {
-    //         frontlinePositions.Add(pos);
-    //     }
-    //     frontlinePositions.Reverse();
 
-    //     // Gets backwards vector
-    //     int val = (int)direction + 4;
-    //     val = val % (Enum.GetNames(typeof(Direction)).Length);
-    //     Direction dir = (Direction)val;
-    //     Vector3 backwards = DirectionExtensions.DirectionToVector3(dir) * settings.standardPhalanxLinkDistance;
 
-    //     // Generate positions backwards from frontline up to 100 positions deep
-    //     for (int i = 1; i <= 100; i++)
-    //     {
-    //         for (int j = frontlinePositions.Count - 1; j >= 0; j--)
-    //         {
-    //             // Breaks when needed positions is generated
-    //             if (positions.Count >= positionCount) return positions;
-
-    //             Vector3 tentativePosition = frontlinePositions[j] + (backwards * i);
-
-    //             if(ValidPosition(tentativePosition)) positions.Add(tentativePosition);
-    //             else frontlinePositions.RemoveAt(j);
-    //         }
-    //     }
-
-    //     return positions;
-    // }
+    //////////////////////////////////////
+    /// PRIVATE METHODS AND PROPERTIES ///
+    //////////////////////////////////////
 
     bool ValidPosition(Vector2 position)
     {
-        RaycastHit2D hit = Physics2D.CircleCast(position, settings.minPhalanxLinkDistance, Vector2.zero, 1f, terrainMask);
+        RaycastHit2D hit = Physics2D.CircleCast(position, settings.phalanxLinkRadius, Vector2.zero, 1f, terrainMask);
         return !hit;
     }
 
@@ -195,3 +227,33 @@ public List<Vector3> GetFirstRankPositions(Vector3 origin, Direction direction, 
     }
 
 }
+
+
+        // // Creates copy of all front rank positions (in reversed order)
+        // List<Vector3> frontlinePositions = new List<Vector3>();
+        // foreach (Vector3 pos in positions)
+        // {
+        //     frontlinePositions.Add(pos);
+        // }
+        // frontlinePositions.Reverse();
+
+        // // Gets backwards vector
+        // int val = (int)direction + 4;
+        // val = val % (Enum.GetNames(typeof(Direction)).Length);
+        // Direction dir = (Direction)val;
+        // Vector3 backwards = DirectionExtensions.DirectionToVector3(dir) * settings.standardPhalanxLinkDistance;
+
+        // // Generate positions backwards from frontline up to 100 positions deep
+        // for (int i = 1; i <= 100; i++)
+        // {
+        //     for (int j = frontlinePositions.Count - 1; j >= 0; j--)
+        //     {
+        //         // Breaks when needed positions is generated
+        //         if (positions.Count >= positionCount) return positions;
+
+        //         Vector3 tentativePosition = frontlinePositions[j] + (backwards * i);
+
+        //         if(ValidPosition(tentativePosition)) positions.Add(tentativePosition);
+        //         else frontlinePositions.RemoveAt(j);
+        //     }
+        // }

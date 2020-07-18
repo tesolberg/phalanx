@@ -7,13 +7,11 @@ namespace Test
 {
     public class UnitTester : MonoBehaviour
     {
-        public Entity entity;
-
-        private void Update()
-        {
-            if(Input.GetKeyDown(KeyCode.C)){
-                entity.IncomingAttack(entity);
+        private void OnMouseDown() {
+            if(Input.GetKey(KeyCode.D)){
+                GetComponent<Entity>().Die();
             }
         }
+
     }
 }

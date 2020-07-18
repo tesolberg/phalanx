@@ -79,7 +79,7 @@ public class Entity : MonoBehaviour
         selectedPhalanxGFX.SetActive(false);
     }
 
-    void Die()
+    public void Die()
     {
         alive = false;
 
@@ -100,8 +100,7 @@ public class Entity : MonoBehaviour
         transform.Find("GFX").GetComponent<SpriteRenderer>().sortingOrder = 0;
 
         // Removes unit from phalanx
-        if (activePhalanx != null) activePhalanx.RemoveLink(GetComponent<PhalanxLink>());
-
+        if (activePhalanx != null) activePhalanx.RemoveEntity(this);
     }
 
 }

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxUnitsSelected: 50
   frontlineMaxWidth: 20
+  phalanxLinkRadius: 0.4
   maxPhalanxLinkDistance: 1.2
   minPhalanxLinkDistance: 0.7
   standardPhalanxLinkDistance: 0.9
