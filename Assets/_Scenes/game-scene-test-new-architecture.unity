@@ -3546,8 +3546,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3070bf87302d81f4aaeadc3b074ebec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  linkIndex: 0
   frontLink: {fileID: 0}
   rearLink: {fileID: 0}
+  rightLink: {fileID: 0}
+  leftLink: {fileID: 0}
   phalanxDirection: 0
 --- !u!4 &245945856 stripped
 Transform:
@@ -6748,6 +6751,7 @@ MonoBehaviour:
   playerFaction: {fileID: 11400000, guid: 1bb5626a743f4f445ac13972d97b6ee9, type: 2}
   selectionArea: {fileID: 52665656}
   fGen: {fileID: 1622619093}
+  settings: {fileID: 11400000, guid: 23681e650f79c6d46a61e28eb5ff5ba9, type: 2}
   formationDirection: 0
   unitPositionIndicatorPrefab: {fileID: 7431708962700961199, guid: e819d45137d04c748816c7f71a24e725,
     type: 3}
@@ -7471,8 +7475,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3070bf87302d81f4aaeadc3b074ebec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  linkIndex: 0
   frontLink: {fileID: 0}
   rearLink: {fileID: 0}
+  rightLink: {fileID: 0}
+  leftLink: {fileID: 0}
   phalanxDirection: 0
 --- !u!4 &1347634051 stripped
 Transform:

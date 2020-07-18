@@ -133,13 +133,13 @@ public class FormationGenerator : MonoBehaviour
 
     bool ValidPosition(Vector2 position)
     {
-        RaycastHit2D hit = Physics2D.CircleCast(position, PhalanxLink.linkRadius, Vector2.zero, 1f, terrainMask);
+        RaycastHit2D hit = Physics2D.CircleCast(position, settings.minPhalanxLinkDistance, Vector2.zero, 1f, terrainMask);
         return !hit;
     }
 
     bool LinksToWall(Vector2 position)
     {
-        RaycastHit2D hit = Physics2D.CircleCast(position, PhalanxLink.minLinkDist, Vector2.zero, 1f, terrainMask);
+        RaycastHit2D hit = Physics2D.CircleCast(position, settings.minPhalanxLinkDistance, Vector2.zero, 1f, terrainMask);
         return hit;
     }
 

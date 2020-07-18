@@ -20,6 +20,7 @@ public class EntityUIController : MonoBehaviour
     [SerializeField] Faction playerFaction;
     [SerializeField] Transform selectionArea;
     [SerializeField] FormationGenerator fGen;
+    [SerializeField] FormationSettings settings;
     Vector3 mouseStartPosition;
     List<Entity> selectedEntities;
     List<Phalanx> phalanxes;
@@ -74,7 +75,7 @@ public class EntityUIController : MonoBehaviour
             // Clears selected phalanx
             if (selectedPhalanx != null)
             {
-                selectedPhalanx.SetSelected(false);
+                selectedPhalanx.SetSelectedStatus(false);
             }
             selectedPhalanx = null;
         }
@@ -179,7 +180,7 @@ public class EntityUIController : MonoBehaviour
                 // Add selected entities as phalanx links
                 // 
 
-                Phalanx newPhalanx = new Phalanx();
+                Phalanx newPhalanx = new Phalanx(settings);
                 foreach (Entity entity in selectedEntities)
                 {
                     entity.SelectEntity(false);
@@ -190,7 +191,7 @@ public class EntityUIController : MonoBehaviour
                 selectedEntities.Clear();
 
                 selectedPhalanx = newPhalanx;
-                selectedPhalanx.SetSelected(true);
+                selectedPhalanx.SetSelectedStatus(true);
                 phalanxes.Add(newPhalanx);
             }
         }
@@ -203,15 +204,15 @@ public class EntityUIController : MonoBehaviour
                 if (phalanxes.Count > 0)
                 {
                     selectedPhalanx = phalanxes[lastSelectedPhalanxIndex % phalanxes.Count];
-                    selectedPhalanx.SetSelected(true);
+                    selectedPhalanx.SetSelectedStatus(true);
                 }
             }
             else
             {
-                selectedPhalanx.SetSelected(false);
+                selectedPhalanx.SetSelectedStatus(false);
                 lastSelectedPhalanxIndex = (phalanxes.FindIndex(item => item == selectedPhalanx) + 1) % phalanxes.Count;
                 selectedPhalanx = phalanxes[lastSelectedPhalanxIndex];
-                selectedPhalanx.SetSelected(true);
+                selectedPhalanx.SetSelectedStatus(true);
             }
         }
     }
@@ -233,7 +234,10 @@ public class EntityUIController : MonoBehaviour
         // Grabs formation positions
         if (selectedPhalanx != null)
         {
-            formationPositions = fGen.GetPhalanxFormation(formationOrigin, formationDirection, selectedPhalanx.links.Count);
+            // formationPositions = fGen.GetPhalanxFormation(formationOrigin, formationDirection, selectedPhalanx.links.Count);
+            // positionsToDraw = formationPositions.Count;
+
+            formationPositions = selectedPhalanx.GetFirstRankPositions(formationOrigin, formationDirection, selectedPhalanx.links.Count);
             positionsToDraw = formationPositions.Count;
         }
         else

@@ -14,17 +14,20 @@ public class PhalanxLink : MonoBehaviour
     /// PRIVATE FIELDS ///
     //////////////////////
 
-    Entity entity;
+    public Phalanx phalanx;
+    public int linkIndex;
     public PhalanxLink frontLink;
     public PhalanxLink rearLink;
+    public PhalanxLink rightLink;
+    public PhalanxLink leftLink;
+    
+    Entity entity;
+
     public Direction phalanxDirection;
+
 
     IMovePosition movePosition;
     AIPath aiPath;
-
-    public static readonly float linkRadius = .45f;
-    public static readonly float maxLinkDist = 1.25f;
-    public static readonly float minLinkDist = 1f;
     
     LayerMask playerLayer;
 
