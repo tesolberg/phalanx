@@ -8,11 +8,6 @@ using System;
 public class Phalanx
 {
 
-    // TODO: Phalanxen bør ta over setup av formasjonen fra formation generator. Det kan internt i phalanxen genereres en første rank som så spes på 
-    // bakover. Linkene kan legges i lister for hver kolonne. Da kan det kjøres utjevningssjekker for å sikre ca like mange i hver kolonne.
-    // Phalanxen kan kun presse forover og bli presset bakover i planet den er orientert. Ved angrep mot flankene er det ikke pressmekanikk men stor
-    // nedside for phalanxen for å kompensere.
-
     /////////////////////
     /// PUBLIC FIELDS ///
     /////////////////////
@@ -147,17 +142,6 @@ public class Phalanx
         }
     }
 
-    private Vector3 GetNextPositionInColumn(List<Vector3> column)
-    {
-        return column[0] + (linkVectorBackward *  column.Count);
-    }
-
-        private PhalanxLink GetNewRearLink(List<PhalanxLink> column)
-    {
-        Vector3 newPosition = column[0].position + (linkVectorBackward *  column.Count);
-        return new PhalanxLink(newPosition);
-    }
-
     public List<Vector3> GetPhalanxFrontline(Vector3 origin, Direction direction)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -204,15 +188,48 @@ public class Phalanx
             if (LinksToWall(position)) leftFlankReached = true; ;
         }
 
-
         return positions;
     }
-
 
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
+
+    void MoveEntityToRear(Entity entity){
+        int columnIndex = GetEntityColumnIndex(entity);
+        
+        // Finds the entity's rank index
+        int rankIndex = -1;
+        for (int i = 0; i < columns[columnIndex].Count; i++)
+        {
+            if(columns[columnIndex][i].entity == entity) rankIndex = i;
+        }
+
+        
+
+    }
+
+    int GetEntityColumnIndex(Entity entity){
+        int columnIndex = -1;
+
+        for (int i = 0; i < columns.Count; i++)
+        {
+            foreach (var link in columns[i])
+            {
+                if(link.entity == entity) columnIndex = i;
+            }            
+        }
+
+        return columnIndex;
+    }
+
+
+    private PhalanxLink GetNewRearLink(List<PhalanxLink> column)
+    {
+        Vector3 newPosition = column[0].position + (linkVectorBackward *  column.Count);
+        return new PhalanxLink(newPosition);
+    }
 
     bool ValidPosition(Vector2 position)
     {
@@ -227,33 +244,3 @@ public class Phalanx
     }
 
 }
-
-
-        // // Creates copy of all front rank positions (in reversed order)
-        // List<Vector3> frontlinePositions = new List<Vector3>();
-        // foreach (Vector3 pos in positions)
-        // {
-        //     frontlinePositions.Add(pos);
-        // }
-        // frontlinePositions.Reverse();
-
-        // // Gets backwards vector
-        // int val = (int)direction + 4;
-        // val = val % (Enum.GetNames(typeof(Direction)).Length);
-        // Direction dir = (Direction)val;
-        // Vector3 backwards = DirectionExtensions.DirectionToVector3(dir) * settings.standardPhalanxLinkDistance;
-
-        // // Generate positions backwards from frontline up to 100 positions deep
-        // for (int i = 1; i <= 100; i++)
-        // {
-        //     for (int j = frontlinePositions.Count - 1; j >= 0; j--)
-        //     {
-        //         // Breaks when needed positions is generated
-        //         if (positions.Count >= positionCount) return positions;
-
-        //         Vector3 tentativePosition = frontlinePositions[j] + (backwards * i);
-
-        //         if(ValidPosition(tentativePosition)) positions.Add(tentativePosition);
-        //         else frontlinePositions.RemoveAt(j);
-        //     }
-        // }
