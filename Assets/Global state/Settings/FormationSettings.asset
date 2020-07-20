@@ -17,7 +17,8 @@ MonoBehaviour:
   phalanxLinkRadius: 0.4
   maxPhalanxLinkDistance: 1.2
   minPhalanxLinkDistance: 0.7
-  standardPhalanxLinkDistance: 0.9
+  standardPhalanxLinkDistance: 0.7
+  rotateOnDamage: 1
   circleFormationDistances:
   - 1.1
   - 2.2

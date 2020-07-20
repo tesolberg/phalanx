@@ -17,7 +17,7 @@ public class Phalanx
     //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
-    private readonly FormationSettings settings;
+    public FormationSettings settings;
     private int terrainMask;
     private float linkDistance;
 
@@ -197,15 +197,23 @@ public class Phalanx
         return positions;
     }
 
-    public void RotateAllColumns(){
+    public void RotateAllColumns()
+    {
+        ReduceColumnSizeVariation();
+
         for (int i = 0; i < columns.Count; i++)
         {
             RotateColumn(i);
         }
     }
 
+    public void RotateColumn(Entity entity){
+        RotateColumn(GetEntityColumnIndex(entity));
+    }
+
     // Moves entity at first rank to rear and updates positions
-    public void RotateColumn(int index){
+    public void RotateColumn(int index)
+    {
         List<Entity> entitiesInColumn = new List<Entity>();
 
         foreach (var link in columns[index])
@@ -226,7 +234,8 @@ public class Phalanx
         RefreshPositionsInColumn(index);
     }
 
-    public void RotateColumnContainingEntity(Entity entity){
+    public void RotateColumnContainingEntity(Entity entity)
+    {
         RotateColumn(GetEntityColumnIndex(entity));
     }
 
@@ -234,7 +243,63 @@ public class Phalanx
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
-    // Removes entity from columns list and refreshers relevant column positions.
+    void ReduceColumnSizeVariation()
+    {
+        bool reduced = false;
+
+        while (!reduced)
+        {
+            int maxColumnSize = 0;
+            int largestColumnIndex = -1;
+            int minColumnSize = 100;
+            int smallesColumnIndex = -1;
+
+            // Finds largest and smalles column
+            for (int i = 0; i < columns.Count; i++)
+            {
+                int size = columns[i].Count;
+                if (size > maxColumnSize)
+                {
+                    maxColumnSize = size;
+                    largestColumnIndex = i;
+                }
+
+                if (size < minColumnSize)
+                {
+                    minColumnSize = size;
+                    smallesColumnIndex = i;
+                }
+            }
+
+            // If difference is larger than one, move one unit from largest to smallest
+            if (maxColumnSize - 1 > minColumnSize)
+            {
+                List<PhalanxLink> largestColumn = columns[largestColumnIndex];
+                Entity entity = largestColumn[largestColumn.Count - 1].entity;
+                MoveEntityTo(entity, smallesColumnIndex);
+            }
+            else reduced = true;
+        }
+    }
+
+    void MoveEntityTo(Entity entity, int targetColumnIndex)
+    {
+        // Removes link at origin
+        List<PhalanxLink> originColumn = columns[GetEntityColumnIndex(entity)];
+        originColumn.RemoveAt(originColumn.Count - 1);
+
+        // Creates new link at destination and adds entity
+        List<PhalanxLink> targetColumn = columns[targetColumnIndex];
+        PhalanxLink newLink = GetNewRearLink(targetColumn);
+        newLink.entity = entity;
+        targetColumn.Add(newLink);
+
+        // Gives entity move command to new position
+        entity.MoveTo(newLink.position);
+    }
+
+    // Removes entity from columns list and refreshers entity's column's positions.
+    // TODO: Bug: column list must be removed if last link is removed.
     private void RemoveEntityFromColumnsList(Entity entity)
     {
         int columnIndex = GetEntityColumnIndex(entity);
@@ -245,11 +310,12 @@ public class Phalanx
         for (int i = 0; i < column.Count; i++)
         {
             // Finds link containing entity
-            if(column[i].entity == entity){
-                // Copies entities behind to list
-                for (int j = 0; i < column.Count - i - 1; i++)
+            if (column[i].entity == entity)
+            {
+                // Moves entities one step forward in column
+                for (int j = i; j < column.Count - 1; j++)
                 {
-                    column[i + j].entity = column[i + j + 1].entity;
+                    column[j].entity = column[j + 1].entity;
                 }
 
                 column.RemoveAt(column.Count - 1);
@@ -260,39 +326,45 @@ public class Phalanx
         RefreshPositionsInColumn(columnIndex);
     }
 
-    // Gets index for column containing given entity. Returns -1 if entity is not found.
-    private int GetEntityColumnIndex(Entity entity){
+    // Gets index for column containing entity. Returns -1 if entity is not found.
+    private int GetEntityColumnIndex(Entity entity)
+    {
         int index = -1;
 
         for (int i = 0; i < columns.Count; i++)
         {
             foreach (var link in columns[i])
             {
-                if(link.entity == entity) index = i;
+                if (link.entity == entity) index = i;
             }
         }
 
-        return index; 
+        return index;
     }
 
-    void RefreshPositionsInColumn(int index){
+    void RefreshPositionsInColumn(int index)
+    {
         foreach (var link in columns[index])
         {
             link.entity.MoveTo(link.position);
         }
     }
 
+    // Adds new PhalanxLink to end of column with correct position field
     private PhalanxLink GetNewRearLink(List<PhalanxLink> column)
     {
         Vector3 newPosition = column[0].position + (linkVectorBackward * column.Count);
         return new PhalanxLink(newPosition);
     }
+
+    // Returns true if position is not blocked by terrain
     bool ValidPosition(Vector2 position)
     {
         RaycastHit2D hit = Physics2D.CircleCast(position, settings.phalanxLinkRadius, Vector2.zero, 1f, terrainMask);
         return !hit;
     }
 
+    // Returns true if position is within minimum phalanx link distance of wall
     bool LinksToWall(Vector2 position)
     {
         RaycastHit2D hit = Physics2D.CircleCast(position, settings.minPhalanxLinkDistance, Vector2.zero, 1f, terrainMask);

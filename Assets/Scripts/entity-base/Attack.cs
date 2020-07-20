@@ -35,7 +35,6 @@ public class Attack : MonoBehaviour
 
             if (target)
             {
-                Debug.Log(gameObject.name + " attacking");
                 TryAttack(target);
                 counter = 0f + UnityEngine.Random.Range(-variabilityBetweenAttacks, variabilityBetweenAttacks);
             }
@@ -70,8 +69,9 @@ public class Attack : MonoBehaviour
         return result;
     }
 
+    // TODO: Decouple entity, attack and health
     private void TryAttack(Entity entity)
     {
-        entity.IncomingAttack(self);
+        entity.GetComponent<Health>().IncomingAttack(self);
     }
 }

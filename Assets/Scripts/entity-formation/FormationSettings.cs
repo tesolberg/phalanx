@@ -11,6 +11,7 @@ public class FormationSettings : ScriptableObject
     public float maxPhalanxLinkDistance;
     public float minPhalanxLinkDistance;
     public float standardPhalanxLinkDistance;    
+    public bool rotateOnDamage = false;
 
     public float[] circleFormationDistances;
     public int[] circleFormationRingCounts;

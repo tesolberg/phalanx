@@ -17,7 +17,7 @@ public class Entity : MonoBehaviour
     /// PRIVATE FIELDS ///
     //////////////////////
 
-    bool alive = true;
+    public bool alive = true;
 
     GameObject selectedGFX;
     GameObject selectedPhalanxGFX;
@@ -61,10 +61,7 @@ public class Entity : MonoBehaviour
     {
         if (alive) movePosition.SetMovePosition(targetPosition);
     }
-    public void IncomingAttack(Entity attacker)
-    {
-        if (UnityEngine.Random.Range(0, 100) < 30) Die();
-    }
+
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///

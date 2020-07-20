@@ -16,7 +16,7 @@ namespace Test
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (Input.GetKeyDown(KeyCode.Alpha1) && entity.ActivePhalanx != null)
             {
                 entity.ActivePhalanx.RotateAllColumns();
             }
