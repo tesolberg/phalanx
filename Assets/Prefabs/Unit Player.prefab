@@ -331,8 +331,8 @@ MonoBehaviour:
   agentTimeHorizon: 2
   obstacleTimeHorizon: 2
   maxNeighbours: 10
-  layer: 512
-  collidesWith: 2147483135
+  layer: -1
+  collidesWith: -1
   wallAvoidForce: 1
   wallAvoidFalloff: 1
   priority: 0.5

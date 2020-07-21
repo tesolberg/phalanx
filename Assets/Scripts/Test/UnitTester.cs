@@ -7,11 +7,24 @@ namespace Test
 {
     public class UnitTester : MonoBehaviour
     {
-        private void OnMouseDown() {
-            if(Input.GetKey(KeyCode.D)){
-                GetComponent<Entity>().Die();
-            }
+
+        Entity entity;
+
+        private void Start()
+        {
+            entity = GetComponent<Entity>();
         }
 
+        private void OnMouseDown()
+        {
+            if (Input.GetKey(KeyCode.A))
+            {
+                entity.ActivePhalanx.AdvanceColumnOfEntity(entity);
+            }
+            else if (Input.GetKey(KeyCode.Z))
+            {
+                entity.ActivePhalanx.RetreatColumnOfEntity(entity);
+            }
+        }
     }
 }

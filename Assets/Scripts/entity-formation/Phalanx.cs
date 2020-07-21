@@ -234,14 +234,29 @@ public class Phalanx
         RefreshPositionsInColumn(index);
     }
 
-    public void RotateColumnContainingEntity(Entity entity)
-    {
-        RotateColumn(GetEntityColumnIndex(entity));
+    public void AdvanceColumnOfEntity(Entity entity){
+        MoveColumn(GetEntityColumnIndex(entity), 1);
+    }
+
+    public void RetreatColumnOfEntity(Entity entity){
+        MoveColumn(GetEntityColumnIndex(entity), -1);
     }
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
+
+    // Advances or retreats column a given steps. 1 step = 1/4 unit.
+    void MoveColumn(int columnIndex, int steps){
+        
+        Vector3 stepForward = linkVectorForward * .25f;
+
+        foreach (var link in columns[columnIndex])
+        {
+            link.position += stepForward * steps;
+            link.entity.MoveTo(link.position);            
+        }
+    }
 
     void ReduceColumnSizeVariation()
     {
