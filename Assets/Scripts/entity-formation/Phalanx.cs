@@ -5,6 +5,9 @@ using UnityAtoms.BaseAtoms;
 using UnityEngine.Tilemaps;
 using System;
 
+
+// TODO: Forenkle fron rank generatoren slik at den generere posisjoner fra venstre mot høyre flanke.
+
 public class Phalanx
 {
 
@@ -28,6 +31,8 @@ public class Phalanx
     private Vector3 linkVectorRight;
     private Vector3 linkVectorBackward;
 
+    List<int> columnOrderLive = new List<int>();
+    List<int> currentColumnOrder = new List<int>();
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -146,8 +151,16 @@ public class Phalanx
                 link.entity.MoveTo(link.position);
             }
         }
+
+        currentColumnOrder.Clear();
+        foreach (var item in columnOrderLive)
+        {
+            currentColumnOrder.Add(item);
+        }
+
     }
 
+    // Gets a list of fron rank positions from an origin position and direction
     public List<Vector3> GetPhalanxFrontline(Vector3 origin, Direction direction)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -165,6 +178,11 @@ public class Phalanx
         // Adds position of cursor
         positions.Add(origin);
 
+        // Generates a list of the indexes for the columns from left flank to right flank
+        columnOrderLive.Clear();
+        columnOrderLive.Add(positions.Count - 1);
+
+
         // Flags for when flanks are reached
         bool rightFlankReached = false;
         bool leftFlankReached = false;
@@ -180,7 +198,11 @@ public class Phalanx
             // Check for wall at tentative right hand position.
             if (!ValidPosition(position)) rightFlankReached = true;
             // If no wall, add to positions.
-            if (!rightFlankReached) positions.Add(position);
+            if (!rightFlankReached)
+            {
+                positions.Add(position);
+                columnOrderLive.Add(positions.Count - 1);
+            }
             // Check for wall within link max distance and flag if found
             if (LinksToWall(position)) rightFlankReached = true; ;
 
@@ -190,7 +212,11 @@ public class Phalanx
             // Repeats for left hand side
             position = (linkVectorRight * -i) + origin;
             if (!ValidPosition(position)) leftFlankReached = true;
-            if (!leftFlankReached) positions.Add(position);
+            if (!leftFlankReached)
+            {
+                positions.Add(position);
+                columnOrderLive.Insert(0, positions.Count - 1);
+            }
             if (LinksToWall(position)) leftFlankReached = true; ;
         }
 
@@ -199,7 +225,7 @@ public class Phalanx
 
     public void RotateAllColumns()
     {
-        ReduceColumnSizeVariation();
+        MinimizeColumnSizeVariation();
 
         for (int i = 0; i < columns.Count; i++)
         {
@@ -207,8 +233,9 @@ public class Phalanx
         }
     }
 
-    public void RotateColumn(Entity entity){
-        RotateColumn(GetEntityColumnIndex(entity));
+    public void RotateColumn(Entity entity)
+    {
+        RotateColumn(GetColumnIndexFromEntity(entity));
     }
 
     // Moves entity at first rank to rear and updates positions
@@ -234,12 +261,14 @@ public class Phalanx
         RefreshPositionsInColumn(index);
     }
 
-    public void AdvanceColumnOfEntity(Entity entity){
-        MoveColumn(GetEntityColumnIndex(entity), 1);
+    public void AdvanceColumnContainingEntity(Entity entity)
+    {
+        MoveColumn(GetColumnIndexFromEntity(entity), 1);
     }
 
-    public void RetreatColumnOfEntity(Entity entity){
-        MoveColumn(GetEntityColumnIndex(entity), -1);
+    public void RetreatColumnContainingEntity(Entity entity)
+    {
+        MoveColumn(GetColumnIndexFromEntity(entity), -1);
     }
 
     //////////////////////////////////////
@@ -247,18 +276,20 @@ public class Phalanx
     //////////////////////////////////////
 
     // Advances or retreats column a given steps. 1 step = 1/4 unit.
-    void MoveColumn(int columnIndex, int steps){
-        
+    void MoveColumn(int columnIndex, int steps)
+    {
+
         Vector3 stepForward = linkVectorForward * .25f;
 
         foreach (var link in columns[columnIndex])
         {
             link.position += stepForward * steps;
-            link.entity.MoveTo(link.position);            
+            link.entity.MoveTo(link.position);
         }
     }
 
-    void ReduceColumnSizeVariation()
+    // TODO: Løse for at siste rad fylles på fra midterste kolonne.
+    void MinimizeColumnSizeVariation()
     {
         bool reduced = false;
 
@@ -291,16 +322,16 @@ public class Phalanx
             {
                 List<PhalanxLink> largestColumn = columns[largestColumnIndex];
                 Entity entity = largestColumn[largestColumn.Count - 1].entity;
-                MoveEntityTo(entity, smallesColumnIndex);
+                MoveEntityToColumn(entity, smallesColumnIndex);
             }
             else reduced = true;
         }
     }
 
-    void MoveEntityTo(Entity entity, int targetColumnIndex)
+    void MoveEntityToColumn(Entity entity, int targetColumnIndex)
     {
         // Removes link at origin
-        List<PhalanxLink> originColumn = columns[GetEntityColumnIndex(entity)];
+        List<PhalanxLink> originColumn = columns[GetColumnIndexFromEntity(entity)];
         originColumn.RemoveAt(originColumn.Count - 1);
 
         // Creates new link at destination and adds entity
@@ -317,7 +348,7 @@ public class Phalanx
     // TODO: Bug: column list must be removed if last link is removed.
     private void RemoveEntityFromColumnsList(Entity entity)
     {
-        int columnIndex = GetEntityColumnIndex(entity);
+        int columnIndex = GetColumnIndexFromEntity(entity);
         List<PhalanxLink> column = columns[columnIndex];
 
         List<Entity> behindEntity = new List<Entity>();
@@ -342,7 +373,7 @@ public class Phalanx
     }
 
     // Gets index for column containing entity. Returns -1 if entity is not found.
-    private int GetEntityColumnIndex(Entity entity)
+    public int GetColumnIndexFromEntity(Entity entity)
     {
         int index = -1;
 
@@ -357,6 +388,7 @@ public class Phalanx
         return index;
     }
 
+    // Gives all entities in column move command to respective positions
     void RefreshPositionsInColumn(int index)
     {
         foreach (var link in columns[index])

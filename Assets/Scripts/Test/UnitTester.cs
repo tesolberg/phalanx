@@ -19,11 +19,7 @@ namespace Test
         {
             if (Input.GetKey(KeyCode.A))
             {
-                entity.ActivePhalanx.AdvanceColumnOfEntity(entity);
-            }
-            else if (Input.GetKey(KeyCode.Z))
-            {
-                entity.ActivePhalanx.RetreatColumnOfEntity(entity);
+                Debug.Log(entity.ActivePhalanx.GetColumnIndexFromEntity(entity));
             }
         }
     }
