@@ -246,6 +246,17 @@ public class Phalanx
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
 
+    // Når en column avanserer, så kaller den follow(self, int som signaliserer retning) 
+    // på naboene sine. Naboene justerer hvis de er utenfor maxDistance og kaller follow på
+    // sin nabo som ikke gav det originale callet.
+    
+    
+    void Follow(int columnToFollow, int step){
+        
+    }
+
+    
+
     // Advances or retreats column a given steps. 1 step = 1/4 unit.
     void MoveColumn(int columnIndex, int steps){
         
