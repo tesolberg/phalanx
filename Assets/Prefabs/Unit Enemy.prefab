@@ -446,6 +446,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 3
   currentHealth: 3
+  settings: {fileID: 11400000, guid: 23681e650f79c6d46a61e28eb5ff5ba9, type: 2}
 --- !u!1 &8538817318961086147
 GameObject:
   m_ObjectHideFlags: 0

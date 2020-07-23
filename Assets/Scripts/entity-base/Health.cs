@@ -14,6 +14,7 @@ public class Health : MonoBehaviour
     /// PRIVATE FIELDS ///
     //////////////////////
 
+    [SerializeField]FormationSettings settings;
     new SpriteRenderer renderer;
     Entity entity;
 
@@ -41,7 +42,7 @@ public class Health : MonoBehaviour
         {
             entity.Die();
         }
-        else if (entity.ActivePhalanx != null && entity.ActivePhalanx.settings.rotateOnDamage)
+        else if (entity.ActivePhalanx != null && settings.rotateOnDamage)
         {
             entity.ActivePhalanx.RotateColumn(entity);
         }

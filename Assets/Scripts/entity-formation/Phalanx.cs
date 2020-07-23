@@ -5,9 +5,6 @@ using UnityAtoms.BaseAtoms;
 using UnityEngine.Tilemaps;
 using System;
 
-
-// TODO: Forenkle fron rank generatoren slik at den generere posisjoner fra venstre mot høyre flanke.
-
 public class Phalanx
 {
 
@@ -20,19 +17,15 @@ public class Phalanx
     //////////////////////
     /// PRIVATE FIELDS ///
     //////////////////////
-    public FormationSettings settings;
+    FormationSettings settings;
     private int terrainMask;
     private float linkDistance;
 
     Direction direction;
-    Vector3 positionalAnchor;
-    private List<List<PhalanxLink>> columns = new List<List<PhalanxLink>>();
-    private Vector3 linkVectorForward;
-    private Vector3 linkVectorRight;
-    private Vector3 linkVectorBackward;
-
-    List<int> columnOrderLive = new List<int>();
-    List<int> currentColumnOrder = new List<int>();
+    List<List<PhalanxLink>> columns = new List<List<PhalanxLink>>();
+    Vector3 linkVectorForward;
+    Vector3 linkVectorRight;
+    Vector3 linkVectorBackward;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -95,9 +88,8 @@ public class Phalanx
 
     public void EstablishFormationAt(Vector3 position, Direction direction)
     {
-        // Updates phalanx direction and anchor
+        // Updates phalanx direction
         this.direction = direction;
-        positionalAnchor = position;
 
         // Updates vectors
         linkVectorForward = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
@@ -108,6 +100,8 @@ public class Phalanx
 
         // Generate first rank phalanx links
         List<Vector3> firstRankPositions = GetPhalanxFrontline(position, direction);
+        if (firstRankPositions.Count == 0) return;
+
         columns.Clear();
         for (int i = 0; i < firstRankPositions.Count; i++)
         {
@@ -121,7 +115,7 @@ public class Phalanx
         // Adds remaining needed positions
         while (true)
         {
-            foreach (var column in columns)
+            for (int i = 0; i < columns.Count; i++)
             {
                 // Checks if number of needed positions is reached + guard
                 if (nextEntityIndex >= activeEntities.Count || tries >= activeEntities.Count * 2) break;
@@ -129,13 +123,13 @@ public class Phalanx
                 tries++;
 
                 // Try to add new link to end of column
-                PhalanxLink newLink = GetNewRearLink(column);
+                PhalanxLink newLink = GetNewRearLink(i);
 
                 // If the new link is valid, add entity and add link to list for this column
                 if (ValidPosition(newLink.position))
                 {
                     newLink.entity = activeEntities[nextEntityIndex++];
-                    column.Add(newLink);
+                    columns[i].Add(newLink);
                 }
             }
 
@@ -143,24 +137,15 @@ public class Phalanx
             if (nextEntityIndex == activeEntities.Count || tries >= activeEntities.Count * 2) break;
         }
 
+        
         // Give move commands
-        foreach (var column in columns)
+        for (int i = 0; i < columns.Count; i++)
         {
-            foreach (var link in column)
-            {
-                link.entity.MoveTo(link.position);
-            }
+            RefreshPositionsInColumn(i);
         }
-
-        currentColumnOrder.Clear();
-        foreach (var item in columnOrderLive)
-        {
-            currentColumnOrder.Add(item);
-        }
-
     }
 
-    // Gets a list of fron rank positions from an origin position and direction
+    // Gets a list of front rank positions from an origin position and direction
     public List<Vector3> GetPhalanxFrontline(Vector3 origin, Direction direction)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -175,49 +160,30 @@ public class Phalanx
 
         if (!ValidPosition(origin)) return positions;
 
-        // Adds position of cursor
-        positions.Add(origin);
+        // Finds right flank
+        int rightFlankOffset = 0;
 
-        // Generates a list of the indexes for the columns from left flank to right flank
-        columnOrderLive.Clear();
-        columnOrderLive.Add(positions.Count - 1);
-
-
-        // Flags for when flanks are reached
-        bool rightFlankReached = false;
-        bool leftFlankReached = false;
-
-        // Generate frontline untill reaching wall or max width
-        for (int i = 1; i <= settings.frontlineMaxWidth / 2; i++)
+        for (int i = 1; i < positionCount / 2; i++)
         {
-            // Breaks when needed positions is generated
-            if (positions.Count >= positionCount) return positions;
+            Vector3 pos = origin + (linkVectorRight * i);
 
-            // Tentative right hand position
-            Vector3 position = (linkVectorRight * i) + origin;
-            // Check for wall at tentative right hand position.
-            if (!ValidPosition(position)) rightFlankReached = true;
-            // If no wall, add to positions.
-            if (!rightFlankReached)
-            {
-                positions.Add(position);
-                columnOrderLive.Add(positions.Count - 1);
-            }
-            // Check for wall within link max distance and flag if found
-            if (LinksToWall(position)) rightFlankReached = true; ;
+            if (!ValidPosition(pos)) break;
 
-            // Breaks when needed positions is generated
-            if (positions.Count >= positionCount) return positions;
+            rightFlankOffset = i;
 
-            // Repeats for left hand side
-            position = (linkVectorRight * -i) + origin;
-            if (!ValidPosition(position)) leftFlankReached = true;
-            if (!leftFlankReached)
-            {
-                positions.Add(position);
-                columnOrderLive.Insert(0, positions.Count - 1);
-            }
-            if (LinksToWall(position)) leftFlankReached = true; ;
+            if (LinksToWall(pos)) break;
+        }
+
+        // Generates front rank positions
+        for (int i = rightFlankOffset; i > -positionCount; i--)
+        {
+            Vector3 pos = origin + (linkVectorRight * i);
+
+            if (!ValidPosition(pos)) break;
+
+            positions.Add(pos);
+
+            if (i < rightFlankOffset && LinksToWall(pos)) break;
         }
 
         return positions;
@@ -225,8 +191,6 @@ public class Phalanx
 
     public void RotateAllColumns()
     {
-        MinimizeColumnSizeVariation();
-
         for (int i = 0; i < columns.Count; i++)
         {
             RotateColumn(i);
@@ -258,6 +222,8 @@ public class Phalanx
             columns[index][i].entity = entitiesInColumn[i];
         }
 
+        MinimizeColumnSizeVariation();
+
         RefreshPositionsInColumn(index);
     }
 
@@ -278,13 +244,14 @@ public class Phalanx
     // Når en column avanserer, så kaller den follow(self, int som signaliserer retning) 
     // på naboene sine. Naboene justerer hvis de er utenfor maxDistance og kaller follow på
     // sin nabo som ikke gav det originale callet.
-    
-    
-    void Follow(int columnToFollow, int step){
-        
+
+
+    void Follow(int columnToFollow, int step)
+    {
+
     }
 
-    
+
 
     // Advances or retreats column a given steps. 1 step = 1/4 unit.
     void MoveColumn(int columnIndex, int steps)
@@ -297,6 +264,8 @@ public class Phalanx
             link.position += stepForward * steps;
             link.entity.MoveTo(link.position);
         }
+
+        // TODO: Hvis distanse til first rank i nabokolonner > maxLinkDistance, call Follow()
     }
 
     // TODO: Løse for at siste rad fylles på fra midterste kolonne.
@@ -346,10 +315,9 @@ public class Phalanx
         originColumn.RemoveAt(originColumn.Count - 1);
 
         // Creates new link at destination and adds entity
-        List<PhalanxLink> targetColumn = columns[targetColumnIndex];
-        PhalanxLink newLink = GetNewRearLink(targetColumn);
+        PhalanxLink newLink = GetNewRearLink(targetColumnIndex);
         newLink.entity = entity;
-        targetColumn.Add(newLink);
+        columns[targetColumnIndex].Add(newLink);
 
         // Gives entity move command to new position
         entity.MoveTo(newLink.position);
@@ -409,9 +377,16 @@ public class Phalanx
     }
 
     // Adds new PhalanxLink to end of column with correct position field
-    private PhalanxLink GetNewRearLink(List<PhalanxLink> column)
+    private PhalanxLink GetNewRearLink(int columnIndex)
     {
-        Vector3 newPosition = column[0].position + (linkVectorBackward * column.Count);
+        List<PhalanxLink> column = columns[columnIndex];
+
+        Vector3 newPosition;
+
+        if (column.Count > 0) newPosition = column[0].position + (linkVectorBackward * column.Count);
+        else if (columnIndex > 0) newPosition = columns[columnIndex - 1][0].position;
+        else newPosition = columns[columnIndex - 1][0].position;
+
         return new PhalanxLink(newPosition);
     }
 
