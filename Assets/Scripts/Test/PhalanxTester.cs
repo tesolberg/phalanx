@@ -7,7 +7,7 @@ namespace Test
     public class PhalanxTester : MonoBehaviour
     {
 
-        public Entity entity;
+        public EntityUIController uIController;
 
         // private void Start()
         // {
@@ -16,9 +16,9 @@ namespace Test
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1) && entity.ActivePhalanx != null)
+            if (Input.GetKeyDown(KeyCode.Alpha1) && uIController.selectedPhalanx != null)
             {
-                entity.ActivePhalanx.RotateAllColumns();
+                uIController.selectedPhalanx.RotateAllColumns();
             }
         
         }

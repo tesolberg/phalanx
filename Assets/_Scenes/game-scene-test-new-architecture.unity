@@ -9372,7 +9372,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd5041dcce5a91542879e6debf0c7765, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 1988319674}
+  uIController: {fileID: 0}
 --- !u!1001 &1231388567
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9647,7 +9647,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1252769214
 Transform:
   m_ObjectHideFlags: 0
@@ -14172,18 +14172,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd0fa145964e516449021d6a7827e367, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1988319674 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5551729377307544346, guid: 73a3e0e07c9d046a6b9056ae57e488de,
-    type: 3}
-  m_PrefabInstance: {fileID: 1602521943}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f8fffe986c5a85469d9ff45bcce679e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &1988728985

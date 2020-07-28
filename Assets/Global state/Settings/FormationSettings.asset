@@ -15,7 +15,7 @@ MonoBehaviour:
   maxUnitsSelected: 50
   frontlineMaxWidth: 20
   phalanxLinkRadius: 0.4
-  maxPhalanxLinkDistance: 1.2
+  maxPhalanxLinkDistance: 0.8
   minPhalanxLinkDistance: 0.7
   standardPhalanxLinkDistance: 0.7
   rotateOnDamage: 1

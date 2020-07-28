@@ -178,8 +178,8 @@ GameObject:
   - component: {fileID: -1006494601462450461}
   - component: {fileID: 4825163659491253267}
   - component: {fileID: -3708055739167113725}
-  - component: {fileID: 3617879683064069135}
   - component: {fileID: 8231178329212085647}
+  - component: {fileID: -1565589254169782657}
   m_Layer: 9
   m_Name: Unit Player
   m_TagString: Untagged
@@ -351,18 +351,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBetweenAttacks: 1
   range: 0.8
---- !u!114 &3617879683064069135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4953674958607045798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d13342f02ad571843a12b51d3f472ab5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &8231178329212085647
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -378,6 +366,18 @@ MonoBehaviour:
   maxHealth: 3
   currentHealth: 3
   settings: {fileID: 11400000, guid: 23681e650f79c6d46a61e28eb5ff5ba9, type: 2}
+--- !u!114 &-1565589254169782657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4953674958607045798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d13342f02ad571843a12b51d3f472ab5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4953674958988022365
 GameObject:
   m_ObjectHideFlags: 0

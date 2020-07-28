@@ -24,7 +24,7 @@ public class EntityUIController : MonoBehaviour
     Vector3 mouseStartPosition;
     List<Entity> selectedEntities;
     List<Phalanx> phalanxes;
-    Phalanx selectedPhalanx;
+    public Phalanx selectedPhalanx;
     int lastSelectedPhalanxIndex = 0;
     public Direction formationDirection = Direction.N;
 

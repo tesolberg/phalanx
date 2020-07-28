@@ -137,7 +137,7 @@ public class Phalanx
             if (nextEntityIndex == activeEntities.Count || tries >= activeEntities.Count * 2) break;
         }
 
-        
+
         // Give move commands
         for (int i = 0; i < columns.Count; i++)
         {
@@ -229,12 +229,20 @@ public class Phalanx
 
     public void AdvanceColumnContainingEntity(Entity entity)
     {
-        MoveColumn(GetColumnIndexFromEntity(entity), 1);
+        int column = GetColumnIndexFromEntity(entity);
+
+        MoveColumn(column, 1);
+        Follow(column - 1, column, 1);
+        Follow(column + 1, column, 1);
     }
 
     public void RetreatColumnContainingEntity(Entity entity)
     {
-        MoveColumn(GetColumnIndexFromEntity(entity), -1);
+        int column = GetColumnIndexFromEntity(entity);
+
+        MoveColumn(column, -1);
+        Follow(column - 1, column, -1);
+        Follow(column + 1, column, -1);
     }
 
     //////////////////////////////////////
@@ -246,9 +254,29 @@ public class Phalanx
     // sin nabo som ikke gav det originale callet.
 
 
-    void Follow(int columnToFollow, int step)
+    void Follow(int columnCalled, int columnCalling, int steps)
     {
+        // Check if needing to move
+        // If moved, call follow on neighbor that did not call
 
+        // Guard against index out of bounds
+        if (columnCalled >= 0 && columnCalled < columns.Count)
+        {
+            // Check distance to caller
+            float distToCaller = (columns[columnCalled][0].position - columns[columnCalling][0].position).magnitude;
+
+            // If larger than max distance
+            if (distToCaller > settings.maxPhalanxLinkDistance)
+            {
+                // Move to within legal distance
+                MoveColumn(columnCalled, steps);
+
+                // Call follow on neighbor that is not the caller
+                if(columnCalled - 1 != columnCalling) Follow(columnCalled - 1, columnCalled, steps);
+                else Follow(columnCalled + 1, columnCalled, steps);
+            }
+        }
+        //    Debug.Log("Column[" + columnCalled + "] following column[" + columnCalling + "]");
     }
 
 
@@ -264,8 +292,6 @@ public class Phalanx
             link.position += stepForward * steps;
             link.entity.MoveTo(link.position);
         }
-
-        // TODO: Hvis distanse til first rank i nabokolonner > maxLinkDistance, call Follow()
     }
 
     // TODO: Løse for at siste rad fylles på fra midterste kolonne.
