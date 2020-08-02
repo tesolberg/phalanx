@@ -58,6 +58,7 @@ public class Phalanx
         }
     }
 
+    // TODO: Error: enum changed while iterating.
     public void RemoveEntity(Entity entity)
     {
         if (activeEntities.Contains(entity))
@@ -156,7 +157,7 @@ public class Phalanx
         // Sets righthand offset vector between links based on direction of frontline
         float linkDistance = settings.standardPhalanxLinkDistance;
         Vector3 linkVectorForward = DirectionExtensions.DirectionToVector3(direction) * linkDistance;
-        Vector3 linkVectorRight = Quaternion.Euler(0, 0, -90) * linkVectorForward;
+        Vector3 linkVectorRight = Quaternion.Euler(0, 0, 90) * linkVectorForward;
 
         if (!ValidPosition(origin)) return positions;
 
@@ -205,21 +206,24 @@ public class Phalanx
     // Moves entity at first rank to rear and updates positions
     public void RotateColumn(int index)
     {
-        List<Entity> entitiesInColumn = new List<Entity>();
-
-        foreach (var link in columns[index])
+        if (columns[index].Count > 0)
         {
-            entitiesInColumn.Add(link.entity);
-        }
+            List<Entity> entitiesInColumn = new List<Entity>();
 
-        Entity firstRank = entitiesInColumn[0];
+            foreach (var link in columns[index])
+            {
+                entitiesInColumn.Add(link.entity);
+            }
 
-        entitiesInColumn.Remove(firstRank);
-        entitiesInColumn.Add(firstRank);
+            Entity firstRank = entitiesInColumn[0];
 
-        for (int i = 0; i < entitiesInColumn.Count; i++)
-        {
-            columns[index][i].entity = entitiesInColumn[i];
+            entitiesInColumn.Remove(firstRank);
+            entitiesInColumn.Add(firstRank);
+
+            for (int i = 0; i < entitiesInColumn.Count; i++)
+            {
+                columns[index][i].entity = entitiesInColumn[i];
+            }
         }
 
         MinimizeColumnSizeVariation();
@@ -232,8 +236,10 @@ public class Phalanx
         int column = GetColumnIndexFromEntity(entity);
 
         MoveColumn(column, 1);
-        Follow(column - 1, column, 1);
-        Follow(column + 1, column, 1);
+        FollowNeighborColumn(column - 1, column, 1);
+        FollowNeighborColumn(column + 1, column, 1);
+
+        CheckFlanksForLinkToWall();
     }
 
     public void RetreatColumnContainingEntity(Entity entity)
@@ -241,23 +247,48 @@ public class Phalanx
         int column = GetColumnIndexFromEntity(entity);
 
         MoveColumn(column, -1);
-        Follow(column - 1, column, -1);
-        Follow(column + 1, column, -1);
+        FollowNeighborColumn(column - 1, column, -1);
+        FollowNeighborColumn(column + 1, column, -1);
+
+        CheckFlanksForLinkToWall();
     }
+
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
     //////////////////////////////////////
-
-    // Når en column avanserer, så kaller den follow(self, int som signaliserer retning) 
-    // på naboene sine. Naboene justerer hvis de er utenfor maxDistance og kaller follow på
-    // sin nabo som ikke gav det originale callet.
-
-
-    void Follow(int columnCalled, int columnCalling, int steps)
+    private void CheckFlanksForLinkToWall()
     {
-        // Check if needing to move
-        // If moved, call follow on neighbor that did not call
+        bool linksToWallLeft = false;
+        bool linksToWallRight = false;
+
+        while (!linksToWallLeft && columns.Count < activeEntities.Count)
+        {
+            if(LinksToWall(columns[0][0].position)){
+                linksToWallLeft = true;
+            }
+            else{
+                columns.Insert(0, new List<PhalanxLink>());
+                MinimizeColumnSizeVariation();
+            }
+        }
+        while (!linksToWallRight && columns.Count < activeEntities.Count)
+        {
+            if(LinksToWall(columns[columns.Count - 1][0].position)){
+                linksToWallRight = true;
+            }
+            else{
+                columns.Add(new List<PhalanxLink>());
+                MinimizeColumnSizeVariation();
+            }
+        }
+        
+    }
+
+    void FollowNeighborColumn(int columnCalled, int columnCalling, int steps)
+    {
+        // Move if exceeding max link distance.
+        // If moved, call follow on the neighbor column that was not the caller
 
         // Guard against index out of bounds
         if (columnCalled >= 0 && columnCalled < columns.Count)
@@ -272,20 +303,18 @@ public class Phalanx
                 MoveColumn(columnCalled, steps);
 
                 // Call follow on neighbor that is not the caller
-                if(columnCalled - 1 != columnCalling) Follow(columnCalled - 1, columnCalled, steps);
-                else Follow(columnCalled + 1, columnCalled, steps);
+                if (columnCalled - 1 != columnCalling) FollowNeighborColumn(columnCalled - 1, columnCalled, steps);
+                else FollowNeighborColumn(columnCalled + 1, columnCalled, steps);
             }
         }
-        //    Debug.Log("Column[" + columnCalled + "] following column[" + columnCalling + "]");
     }
-
 
 
     // Advances or retreats column a given steps. 1 step = 1/4 unit.
     void MoveColumn(int columnIndex, int steps)
     {
 
-        Vector3 stepForward = linkVectorForward * .25f;
+        Vector3 stepForward = linkVectorForward * settings.stepDistance;
 
         foreach (var link in columns[columnIndex])
         {
@@ -409,9 +438,22 @@ public class Phalanx
 
         Vector3 newPosition;
 
+        // If column is not empty
         if (column.Count > 0) newPosition = column[0].position + (linkVectorBackward * column.Count);
-        else if (columnIndex > 0) newPosition = columns[columnIndex - 1][0].position;
-        else newPosition = columns[columnIndex - 1][0].position;
+
+        // If column is empty and not leftmost flank
+        else if (columnIndex > 0)
+        {
+            newPosition = columns[columnIndex - 1][0].position;
+            newPosition += linkVectorRight;
+        }
+
+        // If column is empty and leftmost flank
+        else
+        {
+            newPosition = columns[columnIndex + 1][0].position;
+            newPosition -= linkVectorRight;
+        }
 
         return new PhalanxLink(newPosition);
     }

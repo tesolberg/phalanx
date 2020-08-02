@@ -15,5 +15,5 @@ public class FormationSettings : ScriptableObject
 
     public float[] circleFormationDistances;
     public int[] circleFormationRingCounts;
-    
+    public float stepDistance;
 }

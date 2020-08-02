@@ -24,3 +24,4 @@ MonoBehaviour:
   - 2.2
   - 3.3
   circleFormationRingCounts: 040000000c00000014000000
+  stepDistance: 0.25

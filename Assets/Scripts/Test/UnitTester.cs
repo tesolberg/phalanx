@@ -17,12 +17,16 @@ namespace Test
 
         private void OnMouseDown()
         {
+            Debug.Log(entity.ActivePhalanx.GetColumnIndexFromEntity(entity));
             if (Input.GetKey(KeyCode.A))
             {
                 entity.ActivePhalanx.AdvanceColumnContainingEntity(entity);
             }
             else if(Input.GetKey(KeyCode.Z)){
                 entity.ActivePhalanx.RetreatColumnContainingEntity(entity);
+            }
+            else if(Input.GetKey(KeyCode.D)){
+                entity.Die();
             }
         }
     }
