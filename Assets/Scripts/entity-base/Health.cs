@@ -16,7 +16,7 @@ public class Health : MonoBehaviour
     /// PRIVATE FIELDS ///
     //////////////////////
 
-    [SerializeField]FormationSettings settings;
+    [SerializeField] FormationSettings settings;
     new SpriteRenderer renderer;
     Entity entity;
 
@@ -36,6 +36,13 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
+        // For testing
+        if (entity.ActivePhalanx != null && Random.Range(0,2) > 0)
+        {
+            entity.ActivePhalanx.RetreatColumnContainingEntity(entity);
+            return;
+        }
+
         currentHealth -= amount;
 
         UpdateHealthGFX();
@@ -81,9 +88,9 @@ public class Health : MonoBehaviour
         while (entity.Alive)
         {
             yield return new WaitForSeconds(Random.Range(10f, 20f));
-            
-            if(!entity.Alive) break;
-            
+
+            if (!entity.Alive) break;
+
             Heal(1);
         }
     }

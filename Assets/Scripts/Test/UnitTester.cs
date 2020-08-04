@@ -17,7 +17,6 @@ namespace Test
 
         private void OnMouseDown()
         {
-            Debug.Log(entity.ActivePhalanx.GetColumnIndexFromEntity(entity));
             if (Input.GetKey(KeyCode.A))
             {
                 entity.ActivePhalanx.AdvanceColumnContainingEntity(entity);

@@ -262,27 +262,71 @@ public class Phalanx
         bool linksToWallLeft = false;
         bool linksToWallRight = false;
 
+        // Check if left flank is linked to wall. If not, add column, redistribute units and check again.
         while (!linksToWallLeft && columns.Count < activeEntities.Count)
         {
-            if(LinksToWall(columns[0][0].position)){
+            if (LinksToWall(columns[0][0].position))
+            {
                 linksToWallLeft = true;
             }
-            else{
+            else
+            {
                 columns.Insert(0, new List<PhalanxLink>());
                 MinimizeColumnSizeVariation();
             }
         }
+
+        // Same for right flank
         while (!linksToWallRight && columns.Count < activeEntities.Count)
         {
-            if(LinksToWall(columns[columns.Count - 1][0].position)){
+            if (LinksToWall(columns[columns.Count - 1][0].position))
+            {
                 linksToWallRight = true;
             }
-            else{
+            else
+            {
                 columns.Add(new List<PhalanxLink>());
                 MinimizeColumnSizeVariation();
             }
         }
-        
+
+
+        // Shaves off unneccesary columns at flanks
+        while (ColumnUnneccesary(0)) EliminateColumn(0);
+        while (ColumnUnneccesary(columns.Count - 1)) EliminateColumn(columns.Count - 1);
+    }
+
+    bool ColumnUnneccesary(int columnIndex)
+    {
+        // Guard against reducing phalanx below minimum size of 2
+        if (columns.Count < 3) return false;
+
+        // Left flank
+        if (columnIndex == 0) return LinksToWall(columns[1][0].position);
+
+        else
+        {
+            if (columns[columnIndex - 1].Count > 0) return LinksToWall(columns[columnIndex - 1][0].position);
+            else return true;
+        }
+    }
+
+    void EliminateColumn(int index)
+    {
+
+        // Move all units over to column[1]
+        foreach (var link in columns[index])
+        {
+            PhalanxLink newLink = GetNewRearLink(1);
+            newLink.entity = link.entity;
+            columns[1].Add(newLink);
+            newLink.entity.MoveTo(newLink.position);
+        }
+
+        columns.RemoveAt(index);
+
+        // Redistribute units
+        MinimizeColumnSizeVariation();
     }
 
     void FollowNeighborColumn(int columnCalled, int columnCalling, int steps)
