@@ -31,17 +31,18 @@ public class Health : MonoBehaviour
 
     public void IncomingAttack(Entity attacker)
     {
+        CheckForPush(attacker);
         if (UnityEngine.Random.Range(0, 100) < 40) TakeDamage(1);
     }
 
     public void TakeDamage(int amount)
     {
-        // For testing
-        if (entity.ActivePhalanx != null && Random.Range(0,2) > 0)
-        {
-            entity.ActivePhalanx.RetreatColumnContainingEntity(entity);
-            return;
-        }
+        // Check for retreat
+        // if (entity.ActivePhalanx != null && Random.Range(0,2) > 0)
+        // {
+        //     entity.ActivePhalanx.RetreatColumnContainingEntity(entity);
+        //     return;
+        // }
 
         currentHealth -= amount;
 
@@ -73,6 +74,21 @@ public class Health : MonoBehaviour
         renderer = transform.Find("GFX").GetComponent<SpriteRenderer>();
         entity = transform.GetComponent<Entity>();
         StartCoroutine("HealthRegen");
+    }
+
+    private void CheckForPush(Entity attacker)
+    {
+        Vector2 defenderRearVector = transform.position - attacker.transform.position;
+        Vector2 attackerRearVector = defenderRearVector * -1f;
+
+        // Get defender power
+        int defensePower = entity.GetPushPower(defenderRearVector);
+        int attackerPower = attacker.GetPushPower(attackerRearVector);
+
+        Debug.Log(attacker.faction.name + " " + attacker.gameObject.name + " attacking. aPow = " + attackerPower + ". dPow = " + defensePower);
+        // Random.range attacker vs defender
+        // IF attacker > defender, push
+        
     }
 
     void UpdateHealthGFX()

@@ -253,6 +253,11 @@ public class Phalanx
         CheckFlanksForLinkToWall();
     }
 
+    public int GetColumnDepth(Entity entity){
+        int index = GetColumnIndexFromEntity(entity);
+        return columns[index].Count;
+    }
+
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///

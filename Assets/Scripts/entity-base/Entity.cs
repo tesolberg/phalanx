@@ -23,6 +23,7 @@ public class Entity : MonoBehaviour
     GameObject selectedPhalanxGFX;
     IMovePosition movePosition;
     Phalanx activePhalanx;
+    LayerMask ownLayer;
 
     ////////////////////
     /// CONSTRUCTORS ///
@@ -62,6 +63,15 @@ public class Entity : MonoBehaviour
         if (alive) movePosition.SetMovePosition(targetPosition);
     }
 
+    public int GetPushPower(Vector2 rearVector){
+        // if in phalanx, return column depth
+        if(activePhalanx != null) return activePhalanx.GetColumnDepth(this);
+
+        // Else return depth of ranks including self in opposite vector of attack vector
+        Vector2 ownPosition = transform.position;
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(ownPosition, .2f, rearVector, 50f, ownLayer);
+        return hits.Length;
+    }
 
     //////////////////////////////////////
     /// PRIVATE METHODS AND PROPERTIES ///
@@ -74,6 +84,8 @@ public class Entity : MonoBehaviour
         movePosition = GetComponent<IMovePosition>();
         selectedGFX.SetActive(false);
         selectedPhalanxGFX.SetActive(false);
+        ownLayer = LayerMask.GetMask(faction.name);
+
     }
 
     public void Die()

@@ -46,5 +46,4 @@ public class EnemyAIBase : MonoBehaviour
             if (target) movePosition.SetMovePosition(target.transform.position);
         }
     }
-
 }

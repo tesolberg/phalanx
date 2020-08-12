@@ -72,6 +72,7 @@ public class Attack : MonoBehaviour
     // TODO: Decouple entity, attack and health
     private void TryAttack(Entity entity)
     {
+        
         entity.GetComponent<Health>().IncomingAttack(self);
     }
 }
