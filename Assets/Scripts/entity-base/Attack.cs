@@ -70,9 +70,14 @@ public class Attack : MonoBehaviour
     }
 
     // TODO: Decouple entity, attack and health
-    private void TryAttack(Entity entity)
+    private void TryAttack(Entity target)
     {
+        Push push = target.GetComponent<Push>();
+        if(push != null){
+            
+        }
+
+        target.GetComponent<Health>().IncomingAttack(self);
         
-        entity.GetComponent<Health>().IncomingAttack(self);
     }
 }
